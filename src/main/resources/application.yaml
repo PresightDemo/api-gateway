@@ -1,0 +1,48 @@
+server:
+  port: 10010
+spring:
+  main:
+    web-application-type: reactive
+  reactor:
+    context-propagation: auto
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+      routes:
+        - id: inventory-service
+          uri: lb://inventory-service
+          predicates:
+            - Path=/api/inventory/**
+          filters:
+            - StripPrefix=0
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 100   # requests per second
+                redis-rate-limiter.burstCapacity: 200
+
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/api/order/**
+          filters:
+            - StripPrefix=0
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 100   # requests per second
+                redis-rate-limiter.burstCapacity: 200
+management:
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    org.springframework.security: INFO
+    org.springframework.web.reactive: INFO
+
+# TODO: in future we can restrict the urls by giving actual predicates instead of giving **
