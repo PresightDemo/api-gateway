@@ -22,11 +22,11 @@ public class RequestResponseLoggingFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logRequest(exchange);
-        return chain.filter(exchange).doOnSuccess(aVoid -> logResponse1(exchange))
-                .doOnError(exception -> logResponse1(exchange));
+        return chain.filter(exchange).doOnSuccess(aVoid -> logResponse(exchange))
+                .doOnError(exception -> logResponse(exchange));
     }
 
-    private void logResponse1(ServerWebExchange exchange) {
+    private void logResponse(ServerWebExchange exchange) {
         ServerHttpResponse response = exchange.getResponse();
         log.info("Processed request: {} is returned with status: {}", getRequestURL(exchange), response.getStatusCode());
     }
